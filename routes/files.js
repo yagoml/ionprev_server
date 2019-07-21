@@ -20,15 +20,25 @@ router.post('/save', saveFile)
 
 async function saveFile(req, res) {
 	allowAcessControl(res)
-	res.json({ vai: true })
+	const input = req.body
+	let logID = 0
 
-	// const query = `INSERT INTO logs (user_id, company_id, event_name, action, date_time) VALUES ()
-	// `
+	await db.query(`
+		INSERT INTO public.logs(comments) VALUES ('Default import') returning (id);
+	`).then(result => {
+		logID = result[0].id
+	})
 
-	// db.query(query).then(data => {
-	// 	console.log(data)
-	// 	res.json(data)
-	// })
+	let inserts = ''
+	input.forEach(data => {
+		inserts +=
+			`INSERT INTO logs_data (user_id, company_id, event_name, action, date_time, log_id)
+			VALUES (${data.user_id}, ${data.company_id}, '${data.event_name}', '${data.action}',
+			'${data.date_time}', ${logID});`
+	});
+
+	await db.query(inserts)
+	res.json({ sucess: true })
 }
 
 module.exports = router

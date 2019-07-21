@@ -24,7 +24,6 @@ async function getUsers(req, res) {
 	const query = `select * from users order by name`
 
 	db.query(query).then(data => {
-		console.log(data)
 		res.json(data)
 	})
 }
