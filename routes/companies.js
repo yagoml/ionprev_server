@@ -52,4 +52,20 @@ async function reportCompany(req, res) {
 	})
 }
 
+router.options('/actions', cors())
+router.get('/actions', getCompanyActions)
+
+async function getCompanyActions(req, res) {
+	allowAcessControl(res)
+
+	const query =
+		`select ld.company_id, c.name, ld.event_name from logs_data ld
+		join companies c on c.id = ld.company_id
+		group by ld.company_id, c.name, ld.event_name`
+
+		db.query(query).then(data => {
+			res.json(data)
+		})
+}
+
 module.exports = router

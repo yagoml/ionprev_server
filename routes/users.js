@@ -28,4 +28,40 @@ async function getUsers(req, res) {
 	})
 }
 
+router.options('/topActions', cors())
+router.get('/topActions', getTopActions)
+
+async function getTopActions(req, res) {
+	allowAcessControl(res)
+
+	const query =
+		`select ld.user_id, ld.company_id, u.email, c.name as company,
+		count(ld.action) from logs_data ld
+		join users u on u.id = ld.user_id
+		join companies c on c.id = ld.company_id
+		group by ld.user_id, ld.company_id, u.email, c.name
+		order by count desc`
+
+	db.query(query).then(data => {
+		res.json(data[0])
+	})
+}
+
+router.options('/topAccess', cors())
+router.get('/topAccess', getTopAccess)
+
+async function getTopAccess(req, res) {
+	allowAcessControl(res)
+
+	const query =
+		`select event_name, count(event_name)
+		from logs_data
+		group by event_name
+		order by count desc`
+
+	db.query(query).then(data => {
+		res.json(data[0])
+	})
+}
+
 module.exports = router
