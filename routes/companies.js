@@ -59,12 +59,28 @@ async function getCompanyActions(req, res) {
 	allowAcessControl(res)
 
 	const query =
-		`select ld.company_id, c.name, ld.event_name from logs_data ld
+		`select distinct ld.company_id, c.name, ld.event_name from logs_data ld
 		join companies c on c.id = ld.company_id
 		group by ld.company_id, c.name, ld.event_name`
 
 		db.query(query).then(data => {
-			res.json(data)
+			let doneIDs = []
+			let companiesData = []
+
+			data.forEach(element => {
+				if (!doneIDs.includes(element.company_id)) {
+					doneIDs.push(element.company_id)
+					companiesData.push({
+						id: element.company_id,
+						name: element.name,
+						actions: element.event_name
+					})
+				} else {
+					companiesData[doneIDs.indexOf(element.company_id)].actions += ', ' + element.event_name
+				}
+			})
+
+			res.json(companiesData)
 		})
 }
 
